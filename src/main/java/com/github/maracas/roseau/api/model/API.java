@@ -14,6 +14,8 @@ import com.github.maracas.roseau.api.visit.APITypeResolver;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -144,6 +146,17 @@ public final class API {
 		mapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile.toFile(), this);
 	}
 
+	public String getJsonString() throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		StringWriter w = new StringWriter();
+		mapper.setVisibility(PropertyAccessor.ALL,     JsonAutoDetect.Visibility.NONE);
+		mapper.setVisibility(PropertyAccessor.FIELD,   JsonAutoDetect.Visibility.ANY);
+		mapper.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.ANY);
+		mapper.registerModule(new Jdk8Module());
+		mapper.writerWithDefaultPrettyPrinter().writeValue(w, this);
+		return w.toString();
+	}
+
 	/**
 	 * Parses the given Json file as an API
 	 *
@@ -158,6 +171,14 @@ public final class API {
 		mapper.registerModule(new ParanamerModule()); // For @JsonCreator
 		mapper.setInjectableValues(new InjectableValues.Std().addValue(SpoonAPIFactory.class, factory));
 		return mapper.readValue(jsonFile.toFile(), API.class);
+	}
+
+	public static API fromJson(String json, SpoonAPIFactory factory) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new Jdk8Module()); // For Optional<>
+		mapper.registerModule(new ParanamerModule()); // For @JsonCreator
+		mapper.setInjectableValues(new InjectableValues.Std().addValue(SpoonAPIFactory.class, factory));
+		return mapper.readValue(new StringReader(json), API.class);
 	}
 
 	@Override

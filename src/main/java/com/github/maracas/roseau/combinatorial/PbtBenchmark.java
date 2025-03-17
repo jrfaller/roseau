@@ -1,18 +1,17 @@
 package com.github.maracas.roseau.combinatorial;
 
-import com.github.maracas.roseau.combinatorial.api.GenerateCombinatorialApi;
-import com.github.maracas.roseau.combinatorial.client.GenerateApiClients;
-import com.github.maracas.roseau.combinatorial.v2.GenerateNewVersionsAndLaunchBenchmark;
+import com.github.maracas.roseau.api.SpoonAPIExtractor;
+import com.github.maracas.roseau.combinatorial.pbt.GenerateNewVersionsAndLaunchBenchmark;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
 
-public final class CombinatorialBenchmark {
+public final class PbtBenchmark {
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	public static void main(String[] args) {
-		var maxParallelAnalysis = 1;
+		var maxParallelAnalysis = 8;
 		try {
 			int firstArgParsed = args.length >= 1 ? Integer.parseInt(args[0]) : maxParallelAnalysis;
 			maxParallelAnalysis = Math.max(1, firstArgParsed);
@@ -22,13 +21,8 @@ public final class CombinatorialBenchmark {
 		var outputPath = Path.of(outputDir);
 
 		try {
-			var apiGeneration = new GenerateCombinatorialApi(outputPath);
-			apiGeneration.run();
-			var api = apiGeneration.getApi();
-
-			var clientsGeneration = new GenerateApiClients(api, outputPath);
-			clientsGeneration.run();
-
+			SpoonAPIExtractor apiExtractor = new SpoonAPIExtractor();
+			var api = apiExtractor.extractAPI(Path.of(Constants.API_FOLDER));
 			var newVersionsAndBenchmarkStep = new GenerateNewVersionsAndLaunchBenchmark(api, maxParallelAnalysis, outputPath);
 			newVersionsAndBenchmarkStep.run();
 		} catch (Exception e) {

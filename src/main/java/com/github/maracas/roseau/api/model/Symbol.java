@@ -18,7 +18,7 @@ public abstract sealed class Symbol permits TypeDecl, TypeMemberDecl {
 	/**
 	 * The visibility of the symbol.
 	 */
-	protected final AccessModifier visibility;
+	public AccessModifier visibility;
 
 	/**
 	 * List of non-access modifiers applied to the symbol.
